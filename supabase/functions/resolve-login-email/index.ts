@@ -1,7 +1,7 @@
-// Löst einen Login-Benutzernamen (profiles.username) zur internen
-// Pseudo-E-Mail-Adresse auf, die Supabase Auth intern für diesen Hauswart-
-// User verwendet (siehe docs/PLAN.md Abschnitt 5/8: Login per Benutzername,
-// kein echter E-Mail-Login für Familien). Öffentlich erreichbar (vor dem
+// Löst einen Login-Benutzernamen (profiles.username) zur E-Mail-Adresse des
+// Auth-Users auf: bei Hauswarten die interne Pseudo-Adresse
+// <id>@hauswart.internal, bei Admins ihre echte Adresse (siehe docs/PLAN.md
+// Abschnitt 5/8: Login per Benutzername). Öffentlich erreichbar (vor dem
 // Login gibt es noch keine Session), darum:
 // - kein Hinweis, ob ein Benutzername existiert (immer dieselbe Antwort)
 // - einfaches Rate-Limiting über die Tabelle public.login_attempts
@@ -14,7 +14,6 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 
 const RATE_LIMIT_WINDOW_MINUTES = 5;
 const RATE_LIMIT_MAX_ATTEMPTS = 10;
-const INTERNAL_EMAIL_DOMAIN = "hauswart.internal";
 
 const GENERIC_RESPONSE = { error: "Benutzername oder Passwort ist falsch." };
 
@@ -85,5 +84,11 @@ Deno.serve(async (req) => {
     return jsonResponse(GENERIC_RESPONSE, 404);
   }
 
-  return jsonResponse({ email: `${profile.id}@${INTERNAL_EMAIL_DOMAIN}` }, 200);
+  const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.id);
+  const email = authUser?.user?.email;
+  if (!email) {
+    return jsonResponse(GENERIC_RESPONSE, 404);
+  }
+
+  return jsonResponse({ email }, 200);
 });

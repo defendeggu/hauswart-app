@@ -25,6 +25,18 @@ npm run db:stop       # Lokale Supabase-Instanz stoppen
 npx supabase test db  # pgTAP-Tests in supabase/tests/ gegen die lokale DB
 ```
 
+Gehostetes Projekt (Region Zürich, ref `nhqwxeibjghomnxjvkch`, bereits per
+`supabase link` verknüpft):
+
+```bash
+npx supabase db push --remote                 # neue Migrationen einspielen
+npx supabase functions deploy <name> --remote=nhqwxeibjghomnxjvkch --use-api
+npx supabase config diff                      # vor `config push` immer prüfen
+```
+
+`supabase/config.toml` gilt lokal **und** (per `config push`) für das
+gehostete Projekt – keine reinen Entwicklungswerte für Auth eintragen.
+
 `db:start`/`db:reset` brauchen die Supabase CLI (als devDependency via `npx
 supabase` verfügbar) und Docker Desktop lokal installiert und gestartet.
 
