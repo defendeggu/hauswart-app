@@ -19,7 +19,7 @@ Entwicklung mit Claude Code stehen in [CLAUDE.md](CLAUDE.md).
 
 ## Lokal entwickeln
 
-Voraussetzungen: Node.js 22+, [Docker](https://www.docker.com/) (für die
+Voraussetzungen: Node.js 24+, [Docker](https://www.docker.com/) (für die
 lokale Supabase-Instanz).
 
 ```bash
