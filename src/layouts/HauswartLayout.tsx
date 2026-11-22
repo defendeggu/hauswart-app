@@ -12,8 +12,8 @@ export function HauswartLayout() {
       <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
         <span className="text-sm font-medium text-slate-700">{profile?.name}</span>
         <div className="flex items-center gap-4">
-          <Link to="/passwort" className={linkButtonClass}>
-            Passwort
+          <Link to="/konto" className={linkButtonClass}>
+            Konto
           </Link>
           <button type="button" onClick={() => signOut()} className={linkButtonClass}>
             Abmelden

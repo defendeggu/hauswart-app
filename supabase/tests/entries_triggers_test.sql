@@ -3,7 +3,7 @@
 -- Unverifiziert ohne lokale Supabase-Instanz (siehe entries_rls_test.sql).
 
 BEGIN;
-SELECT plan(6);
+SELECT plan(10);
 
 CREATE TEMPORARY TABLE test_ids (key text PRIMARY KEY, val uuid NOT NULL DEFAULT gen_random_uuid());
 INSERT INTO test_ids (key) VALUES
@@ -104,6 +104,38 @@ SELECT throws_ok(
   ),
   'P0001',
   'eine für nur_familien nicht erlaubte Familie wird abgelehnt'
+);
+
+-- 7. Laufende Periode kann nicht abgeschlossen werden (Ende noch nicht erreicht).
+SELECT throws_ok(
+  format($sql$UPDATE public.periods SET status = 'abgeschlossen' WHERE id = '%s'$sql$, pg_temp.id('period_offen')),
+  'P0001',
+  'eine laufende Periode kann nicht abgeschlossen werden'
+);
+
+-- 8. Abgeschlossene Periode ist schreibgeschützt (z.B. Stundensatz).
+SELECT throws_ok(
+  format($sql$UPDATE public.periods SET stundensatz_chf = 35 WHERE id = '%s'$sql$, pg_temp.id('period_zu')),
+  'P0001',
+  'der Stundensatz einer abgeschlossenen Periode ist gesperrt'
+);
+
+-- 9. Wiederöffnen ohne Begründung wird abgelehnt.
+SELECT throws_ok(
+  format($sql$UPDATE public.periods SET status = 'offen' WHERE id = '%s'$sql$, pg_temp.id('period_zu')),
+  'P0001',
+  'wiederöffnen ohne Begründung wird abgelehnt'
+);
+
+-- 10. Mit Begründung geht es, und sie landet im Audit-Log.
+SELECT set_config('hauswart.grund', 'Nachtrag einer Familie', true);
+UPDATE public.periods SET status = 'offen' WHERE id = pg_temp.id('period_zu');
+SELECT is(
+  (SELECT grund FROM public.audit_log
+   WHERE tabelle = 'periods' AND zeile_id = pg_temp.id('period_zu')
+   ORDER BY id DESC LIMIT 1),
+  'Nachtrag einer Familie',
+  'die Begründung fürs Wiederöffnen steht im Audit-Log'
 );
 
 SELECT * FROM finish();

@@ -4,7 +4,7 @@
 -- `npx supabase test db` verifizieren.
 
 BEGIN;
-SELECT plan(7);
+SELECT plan(8);
 
 -- Fixtures -------------------------------------------------------------
 
@@ -29,12 +29,12 @@ CREATE FUNCTION pg_temp.make_auth_user(p_id uuid, p_email text) RETURNS void AS 
   );
 $$ LANGUAGE sql;
 
-CREATE FUNCTION pg_temp.login_as(p_user uuid) RETURNS void AS $$
+CREATE FUNCTION pg_temp.login_as(p_user uuid, p_aal text DEFAULT 'aal2') RETURNS void AS $$
 BEGIN
   EXECUTE 'SET LOCAL ROLE authenticated';
   PERFORM set_config(
     'request.jwt.claims',
-    json_build_object('sub', p_user::text, 'role', 'authenticated')::text,
+    json_build_object('sub', p_user::text, 'role', 'authenticated', 'aal', p_aal)::text,
     true
   );
 END;
@@ -119,7 +119,17 @@ SELECT is(
 SELECT pg_temp.logout();
 UPDATE public.profiles SET aktiv = true WHERE id = pg_temp.id('user_a');
 
--- Admin sieht und schreibt alles (mit Pflicht-Kommentar).
+-- Admin ohne bestätigte 2FA (aal1) hat keine Admin-Rechte.
+SELECT pg_temp.login_as(pg_temp.id('admin'), 'aal1');
+
+SELECT is(
+  (SELECT count(*) FROM public.entries)::int, 0,
+  'admin ohne 2FA (aal1) sieht keine Einträge'
+);
+
+SELECT pg_temp.logout();
+
+-- Admin mit 2FA (aal2) sieht und schreibt alles (mit Pflicht-Kommentar).
 SELECT pg_temp.login_as(pg_temp.id('admin'));
 
 SELECT is(

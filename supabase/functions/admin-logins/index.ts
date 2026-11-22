@@ -1,13 +1,12 @@
-// Logins verwalten (nur für Admins): neues Login mit Initial-Passwort
-// anlegen und Passwort zurücksetzen. Braucht den service_role-Key (Auth-User
-// anlegen/ändern geht nur damit), darum hier und nie im Frontend. Sperren
-// und Entsperren macht das Frontend direkt über profiles.aktiv (RLS).
+// Logins verwalten (nur für Admins mit bestätigter 2FA): neues Login mit
+// Initial-Passwort anlegen, Passwort zurücksetzen, 2FA zurücksetzen. Braucht
+// den service_role-Key (Auth-User anlegen/ändern geht nur damit), darum hier
+// und nie im Frontend. Sperren und Entsperren macht das Frontend direkt über
+// profiles.aktiv (RLS).
 //
 // Hauswart-Logins bekommen eine interne Pseudo-E-Mail <id>@hauswart.internal
 // (Login per Benutzername, siehe docs/PLAN.md Abschnitt 5), Admin-Logins
 // ihre echte E-Mail-Adresse.
-//
-// TODO M4: zusätzlich aal2 (2FA) für den Aufrufer verlangen.
 
 import { createClient, type SupabaseClient } from "npm:@supabase/supabase-js@2";
 import { corsHeadersFor, jsonResponse } from "../_shared/cors.ts";
@@ -26,17 +25,30 @@ function generatePassword(): string {
   return [0, 4, 8, 12].map((i) => chars.slice(i, i + 4).join("")).join("-");
 }
 
-async function requireAdmin(req: Request, admin: SupabaseClient): Promise<boolean> {
+function jwtClaims(token: string): Record<string, unknown> {
+  try {
+    const payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    return JSON.parse(atob(payload));
+  } catch {
+    return {};
+  }
+}
+
+/** Gibt die User-ID des Aufrufers zurück, wenn er aktiver Admin mit 2FA ist. */
+async function requireAdmin(req: Request, admin: SupabaseClient): Promise<string | null> {
   const token = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!token) return false;
+  if (!token) return null;
+  // getUser prüft die Signatur des Tokens beim Auth-Server; erst danach
+  // vertrauen wir dem aal-Claim aus demselben Token.
   const { data } = await admin.auth.getUser(token);
-  if (!data.user) return false;
+  if (!data.user) return null;
+  if (jwtClaims(token).aal !== "aal2") return null;
   const { data: profile } = await admin
     .from("profiles")
     .select("rolle, aktiv")
     .eq("id", data.user.id)
     .maybeSingle();
-  return profile?.rolle === "admin" && profile.aktiv === true;
+  return profile?.rolle === "admin" && profile.aktiv === true ? data.user.id : null;
 }
 
 interface CreateInput {
@@ -55,6 +67,11 @@ interface ResetInput {
   password?: string;
 }
 
+interface ResetMfaInput {
+  action: "reset_mfa";
+  user_id: string;
+}
+
 Deno.serve(async (req) => {
   const cors = corsHeadersFor(req);
   const respond = (payload: unknown, status: number) => jsonResponse(payload, status, cors);
@@ -71,15 +88,39 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  if (!(await requireAdmin(req, admin))) {
-    return respond({ error: "Nur Admins dürfen Logins verwalten." }, 403);
+  const callerId = await requireAdmin(req, admin);
+  if (!callerId) {
+    return respond({ error: "Nur Admins mit aktiver 2FA dürfen Logins verwalten." }, 403);
   }
 
-  let input: CreateInput | ResetInput;
+  let input: CreateInput | ResetInput | ResetMfaInput;
   try {
     input = await req.json();
   } catch {
     return respond({ error: "Ungültiger Request-Body" }, 400);
+  }
+
+  if (input.action === "reset_mfa") {
+    if (input.user_id === callerId) {
+      return respond(
+        { error: "Die eigene 2FA kann nur ein anderer Admin zurücksetzen." },
+        400,
+      );
+    }
+    const { data, error } = await admin.auth.admin.mfa.listFactors({ userId: input.user_id });
+    if (error) {
+      return respond({ error: "Die 2FA konnte nicht zurückgesetzt werden." }, 400);
+    }
+    for (const factor of data.factors) {
+      const { error: deleteError } = await admin.auth.admin.mfa.deleteFactor({
+        id: factor.id,
+        userId: input.user_id,
+      });
+      if (deleteError) {
+        return respond({ error: "Die 2FA konnte nicht zurückgesetzt werden." }, 400);
+      }
+    }
+    return respond({ removed: data.factors.length }, 200);
   }
 
   if (input.action === "reset_password") {

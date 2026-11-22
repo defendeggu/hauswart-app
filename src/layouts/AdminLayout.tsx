@@ -5,9 +5,11 @@ import { linkButtonClass } from "../components/ui";
 const TABS = [
   { to: "/admin", label: "Übersicht", end: true },
   { to: "/admin/eintraege", label: "Einträge" },
+  { to: "/admin/perioden", label: "Perioden" },
   { to: "/admin/familien", label: "Familien" },
   { to: "/admin/taetigkeiten", label: "Tätigkeiten" },
   { to: "/admin/logins", label: "Logins" },
+  { to: "/admin/audit", label: "Audit-Log" },
 ];
 
 export function AdminLayout() {
@@ -21,8 +23,8 @@ export function AdminLayout() {
             Admin · <span className="font-normal text-slate-600">{profile?.name}</span>
           </span>
           <div className="flex items-center gap-4">
-            <NavLink to="/passwort" className={linkButtonClass}>
-              Passwort
+            <NavLink to="/konto" className={linkButtonClass}>
+              Konto
             </NavLink>
             <button type="button" onClick={() => signOut()} className={linkButtonClass}>
               Abmelden

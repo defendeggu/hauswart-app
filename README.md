@@ -18,18 +18,20 @@ Aktuelle Version siehe `package.json` bzw. Fusszeile der App (SemVer).
 - **M1** Datenmodell, RLS, Trigger, Login per Benutzername – erledigt
 - **M2** Hauswart-App: Stunden/Auslagen erfassen, eigene Einträge – erledigt
 - **M3** Admin-Bereich: Übersicht, Einträge, Familien, Tätigkeiten, Logins – erledigt
-- M4–M7: siehe [docs/PLAN.md](docs/PLAN.md) Abschnitt 9
+- **M4** 2FA (Pflicht für Admins), Perioden abschliessen/wieder öffnen, Stundensatz, Audit-Log – erledigt
+- M5–M7: siehe [docs/PLAN.md](docs/PLAN.md) Abschnitt 9
 
 ## Funktionen
 
 - **Familien (Rolle hauswart):** Login per Benutzername, Stunden und Auslagen
   erfassen, eigene Einträge nach Periode/Monat mit Guthaben, Bearbeiten und
-  Löschen in offenen Perioden, Passwort ändern. Als App auf iPhone/Android
-  installierbar.
+  Löschen in offenen Perioden, Passwort ändern, 2FA freiwillig. Als App auf
+  iPhone/Android installierbar.
 - **Admins (Verwalter, Entwickler):** Übersicht pro Periode, alle Einträge
   filtern/korrigieren/nachtragen (mit Kommentar), Familien und Tätigkeiten
-  pflegen, Logins mit Initial-Passwort anlegen, Passwort zurücksetzen,
-  Logins sperren.
+  pflegen, Logins mit Initial-Passwort anlegen, Passwort und 2FA
+  zurücksetzen, Logins sperren, Perioden abschliessen/wieder öffnen,
+  Stundensatz ändern, Audit-Log. 2FA ist Pflicht.
 - Echte Namen stehen nur in der Datenbank, nie im Repo.
 
 ## Lokal entwickeln
@@ -78,6 +80,23 @@ insert into public.profiles (id, username, name, rolle)
 select id, '<benutzername>', '<Name>', 'admin'
 from auth.users where email = '<e-mail>';
 ```
+
+## 2FA
+
+Für Admins ist die Zwei-Faktor-Anmeldung (TOTP, z.B. Google Authenticator)
+Pflicht; ohne sie gibt die Datenbank keine Admin-Rechte (AAL2 in den
+RLS-Policies). Für Familien ist sie freiwillig (unter *Konto*).
+
+Verliert jemand sein Handy, setzt ein anderer Admin unter *Logins → 2FA
+zurücksetzen* die 2FA zurück. **Notfall** (kein Admin mehr mit 2FA
+erreichbar): im Supabase-Dashboard im SQL Editor
+
+```sql
+delete from auth.mfa_factors
+where user_id = (select id from auth.users where email = '<e-mail des admins>');
+```
+
+Danach anmelden und die 2FA neu einrichten.
 
 ## Lizenz
 

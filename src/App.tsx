@@ -2,7 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
-import { PasswordPage } from "./pages/PasswordPage";
+import { AccountPage } from "./pages/AccountPage";
 import { EntryFormPage } from "./pages/EntryFormPage";
 import { MyEntriesPage } from "./pages/MyEntriesPage";
 import { AdminOverviewPage } from "./pages/admin/AdminOverviewPage";
@@ -10,6 +10,8 @@ import { AdminEntriesPage } from "./pages/admin/AdminEntriesPage";
 import { AdminFamiliesPage } from "./pages/admin/AdminFamiliesPage";
 import { AdminActivitiesPage } from "./pages/admin/AdminActivitiesPage";
 import { AdminLoginsPage } from "./pages/admin/AdminLoginsPage";
+import { AdminPeriodsPage } from "./pages/admin/AdminPeriodsPage";
+import { AdminAuditPage } from "./pages/admin/AdminAuditPage";
 import { HauswartLayout } from "./layouts/HauswartLayout";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { Footer } from "./components/Footer";
@@ -40,6 +42,8 @@ export default function App() {
               <Route path="familien" element={<AdminFamiliesPage />} />
               <Route path="taetigkeiten" element={<AdminActivitiesPage />} />
               <Route path="logins" element={<AdminLoginsPage />} />
+              <Route path="perioden" element={<AdminPeriodsPage />} />
+              <Route path="audit" element={<AdminAuditPage />} />
             </Route>
 
             <Route
@@ -54,10 +58,10 @@ export default function App() {
             </Route>
 
             <Route
-              path="/passwort"
+              path="/konto"
               element={
                 <ProtectedRoute>
-                  <PasswordPage />
+                  <AccountPage />
                 </ProtectedRoute>
               }
             />

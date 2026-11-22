@@ -3,6 +3,7 @@ import {
   createLogin,
   fetchFamilies,
   fetchLogins,
+  resetMfa,
   resetPassword,
   setLoginActive,
   type Family,
@@ -37,6 +38,7 @@ export function AdminLoginsPage() {
   const [credentials, setCredentials] = useState<Credentials | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const familyName = (id: string | null) => data.data?.families.find((f) => f.id === id)?.name ?? "";
 
@@ -47,6 +49,31 @@ export function AdminLoginsPage() {
     try {
       const { password } = await resetPassword(login.id);
       setCredentials({ username: login.username, password, title: "Neues Passwort" });
+    } catch (err) {
+      setActionError((err as Error).message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleResetMfa(login: LoginRow) {
+    if (
+      !confirm(
+        `2FA von „${login.username}“ zurücksetzen? Die Person meldet sich danach nur mit Passwort an` +
+          (login.rolle === "admin" ? " und muss die 2FA beim nächsten Login neu einrichten." : "."),
+      )
+    )
+      return;
+    setBusyId(login.id);
+    setActionError(null);
+    setNotice(null);
+    try {
+      const { removed } = await resetMfa(login.id);
+      setNotice(
+        removed > 0
+          ? `2FA von „${login.username}“ wurde zurückgesetzt.`
+          : `„${login.username}“ hatte keine 2FA eingerichtet.`,
+      );
     } catch (err) {
       setActionError((err as Error).message);
     } finally {
@@ -89,6 +116,11 @@ export function AdminLoginsPage() {
       </p>
 
       <ErrorText message={data.error ?? actionError} />
+      {notice && (
+        <p role="status" className="rounded-lg bg-teal-50 px-3 py-2 text-sm text-teal-800">
+          {notice}
+        </p>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-sm">
@@ -120,6 +152,16 @@ export function AdminLoginsPage() {
                     >
                       Passwort zurücksetzen
                     </button>
+                    {login.id !== profile?.id && (
+                      <button
+                        type="button"
+                        disabled={busyId === login.id}
+                        onClick={() => handleResetMfa(login)}
+                        className={linkButtonClass}
+                      >
+                        2FA zurücksetzen
+                      </button>
+                    )}
                     {login.id !== profile?.id && (
                       <button
                         type="button"
@@ -286,7 +328,7 @@ function CredentialsDialog({ credentials, onClose }: { credentials: Credentials;
       <div className="space-y-4">
         <p className="text-sm text-slate-600">
           Das Passwort wird nur jetzt angezeigt. Bitte der Person persönlich weitergeben. Nach dem
-          ersten Login kann sie es unter „Passwort“ ändern.
+          ersten Login kann sie es unter „Konto“ ändern.
         </p>
         <dl className="rounded-lg bg-slate-50 p-4 font-mono text-base">
           <div className="flex justify-between gap-4">

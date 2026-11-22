@@ -145,3 +145,71 @@ export function resetPassword(userId: string, password?: string) {
     password,
   });
 }
+
+export function resetMfa(userId: string) {
+  return invokeAdminLogins<{ removed: number }>({ action: "reset_mfa", user_id: userId });
+}
+
+/** Legt laufende und nächste Periode an, falls sie fehlen (gleicher Typ, gleicher Satz). */
+export async function ensurePeriods() {
+  const { error } = await supabase.rpc("ensure_periods");
+  if (error) throw error;
+}
+
+export async function closePeriod(periodId: string) {
+  const { error } = await supabase.from("periods").update({ status: "abgeschlossen" }).eq("id", periodId);
+  if (error) throw error;
+}
+
+export async function reopenPeriod(periodId: string, grund: string) {
+  const { error } = await supabase.rpc("reopen_period", { p_period_id: periodId, p_grund: grund });
+  if (error) throw error;
+}
+
+export async function setPeriodTyp(periodId: string, typ: Period["typ"]) {
+  const { error } = await supabase.rpc("set_period_typ", { p_period_id: periodId, p_typ: typ });
+  if (error) throw error;
+}
+
+export async function setStundensatz(periodId: string, stundensatzChf: number) {
+  const { error } = await supabase
+    .from("periods")
+    .update({ stundensatz_chf: stundensatzChf })
+    .eq("id", periodId);
+  if (error) throw error;
+}
+
+export interface AuditRow {
+  id: number;
+  wer: string | null;
+  wann: string;
+  tabelle: string;
+  zeile_id: string;
+  aktion: "insert" | "update" | "delete";
+  alt: Record<string, unknown> | null;
+  neu: Record<string, unknown> | null;
+  grund: string | null;
+}
+
+export interface AuditFilter {
+  tabelle?: string;
+  wer?: string;
+  von?: string;
+  bis?: string;
+}
+
+export async function fetchAuditLog(filter: AuditFilter = {}, limit = 200): Promise<AuditRow[]> {
+  let query = supabase
+    .from("audit_log")
+    .select("id, wer, wann, tabelle, zeile_id, aktion, alt, neu, grund")
+    .order("wann", { ascending: false })
+    .limit(limit);
+  if (filter.tabelle) query = query.eq("tabelle", filter.tabelle);
+  if (filter.wer) query = query.eq("wer", filter.wer);
+  // Tagesgrenzen in der Zeitzone des Geräts (Schweiz), nicht in UTC.
+  if (filter.von) query = query.gte("wann", new Date(`${filter.von}T00:00:00`).toISOString());
+  if (filter.bis) query = query.lte("wann", new Date(`${filter.bis}T23:59:59.999`).toISOString());
+  const { data, error } = await query;
+  if (error) throw error;
+  return data as AuditRow[];
+}

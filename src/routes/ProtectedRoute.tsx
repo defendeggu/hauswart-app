@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth, type Rolle } from "../lib/auth";
+import { MfaChallengePage } from "../pages/MfaChallengePage";
+import { MfaRequiredPage } from "../pages/MfaRequiredPage";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -8,7 +10,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requireRolle }: ProtectedRouteProps) {
-  const { session, profile, loading } = useAuth();
+  const { session, profile, aal, loading } = useAuth();
 
   if (loading) {
     return (
@@ -28,6 +30,16 @@ export function ProtectedRoute({ children, requireRolle }: ProtectedRouteProps) 
         Dieses Login ist gesperrt. Bitte beim Verwalter melden.
       </div>
     );
+  }
+
+  // 2FA eingerichtet, aber in dieser Sitzung noch nicht bestätigt.
+  if (aal.next === "aal2" && aal.current !== "aal2") {
+    return <MfaChallengePage />;
+  }
+
+  // Für Admins ist 2FA Pflicht; die Datenbank gibt Admin-Rechte nur mit aal2.
+  if (profile.rolle === "admin" && aal.current !== "aal2") {
+    return <MfaRequiredPage />;
   }
 
   if (requireRolle && profile.rolle !== requireRolle) {
