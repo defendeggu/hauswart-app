@@ -15,7 +15,8 @@ Entwicklung mit Claude Code stehen in [CLAUDE.md](CLAUDE.md).
 - **M0** Projektgerüst, PWA, GitHub Actions – erledigt
 - **M1** Datenmodell, RLS, Trigger, Login per Benutzername – erledigt
 - **M2** Hauswart-App: Stunden/Auslagen erfassen, eigene Einträge – erledigt
-- M3–M7: siehe [docs/PLAN.md](docs/PLAN.md) Abschnitt 9
+- **M3** Admin-Bereich: Übersicht, Einträge, Familien, Tätigkeiten, Logins – erledigt
+- M4–M7: siehe [docs/PLAN.md](docs/PLAN.md) Abschnitt 9
 
 ## Lokal entwickeln
 

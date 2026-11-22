@@ -2,10 +2,16 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AuthProvider, useAuth } from "./lib/auth";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { LoginPage } from "./pages/LoginPage";
+import { PasswordPage } from "./pages/PasswordPage";
 import { EntryFormPage } from "./pages/EntryFormPage";
 import { MyEntriesPage } from "./pages/MyEntriesPage";
-import { AdminHome } from "./pages/AdminHome";
+import { AdminOverviewPage } from "./pages/admin/AdminOverviewPage";
+import { AdminEntriesPage } from "./pages/admin/AdminEntriesPage";
+import { AdminFamiliesPage } from "./pages/admin/AdminFamiliesPage";
+import { AdminActivitiesPage } from "./pages/admin/AdminActivitiesPage";
+import { AdminLoginsPage } from "./pages/admin/AdminLoginsPage";
 import { HauswartLayout } from "./layouts/HauswartLayout";
+import { AdminLayout } from "./layouts/AdminLayout";
 import { Footer } from "./components/Footer";
 
 function RoleHome() {
@@ -25,10 +31,16 @@ export default function App() {
               path="/admin"
               element={
                 <ProtectedRoute requireRolle="admin">
-                  <AdminHome />
+                  <AdminLayout />
                 </ProtectedRoute>
               }
-            />
+            >
+              <Route index element={<AdminOverviewPage />} />
+              <Route path="eintraege" element={<AdminEntriesPage />} />
+              <Route path="familien" element={<AdminFamiliesPage />} />
+              <Route path="taetigkeiten" element={<AdminActivitiesPage />} />
+              <Route path="logins" element={<AdminLoginsPage />} />
+            </Route>
 
             <Route
               element={
@@ -40,6 +52,15 @@ export default function App() {
               <Route path="/erfassen" element={<EntryFormPage />} />
               <Route path="/eintraege" element={<MyEntriesPage />} />
             </Route>
+
+            <Route
+              path="/passwort"
+              element={
+                <ProtectedRoute>
+                  <PasswordPage />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path="/"

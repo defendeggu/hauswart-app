@@ -47,6 +47,7 @@ export interface NewEntryInput {
   dauer_h: number | null;
   betrag_chf: number | null;
   bemerkung: string | null;
+  admin_kommentar?: string | null;
 }
 
 /** Aktive Tätigkeiten, gefiltert auf die, die für `familyId` erlaubt sind. */
@@ -84,7 +85,10 @@ export async function createEntry(input: NewEntryInput): Promise<void> {
 
 export async function updateEntry(
   id: string,
-  input: Pick<NewEntryInput, "datum" | "activity_id" | "dauer_h" | "betrag_chf" | "bemerkung">,
+  input: Pick<
+    NewEntryInput,
+    "datum" | "activity_id" | "dauer_h" | "betrag_chf" | "bemerkung" | "admin_kommentar"
+  >,
 ): Promise<void> {
   const { error } = await supabase.from("entries").update(input).eq("id", id);
   if (error) throw error;

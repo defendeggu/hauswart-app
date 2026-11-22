@@ -10,6 +10,7 @@ import {
 import { friendlyErrorMessage } from "../lib/errors";
 import { formatChf, formatDate, formatHours } from "../lib/format";
 import { EditEntryDialog } from "../components/EditEntryDialog";
+import { chfToRappen, stundenRappen } from "../lib/billing";
 
 interface PeriodGroup {
   periodId: string;
@@ -20,6 +21,7 @@ interface PeriodGroup {
   stundensatzChf: number;
   entries: Entry[];
   stundenTotal: number;
+  stundenRappen: number;
   auslagenRappen: number;
 }
 
@@ -52,14 +54,18 @@ function groupByPeriod(entries: Entry[]): PeriodGroup[] {
         stundensatzChf: info.stundensatz_chf,
         entries: [],
         stundenTotal: 0,
+        stundenRappen: 0,
         auslagenRappen: 0,
       };
       groups.set(entry.period_id, group);
     }
 
     group.entries.push(entry);
-    if (entry.dauer_h) group.stundenTotal += entry.dauer_h;
-    if (entry.betrag_chf) group.auslagenRappen += Math.round(entry.betrag_chf * 100);
+    if (entry.dauer_h !== null) {
+      group.stundenTotal += entry.dauer_h;
+      group.stundenRappen += stundenRappen(entry.dauer_h, info.stundensatz_chf);
+    }
+    if (entry.betrag_chf !== null) group.auslagenRappen += chfToRappen(entry.betrag_chf);
   }
 
   return [...groups.values()].sort((a, b) => b.von.localeCompare(a.von));
@@ -130,8 +136,7 @@ export function MyEntriesPage() {
 
       <div className="mt-4 space-y-6">
         {periodGroups.map((group) => {
-          const guthabenRappen =
-            Math.round(group.stundenTotal * group.stundensatzChf * 100) + group.auslagenRappen;
+          const guthabenRappen = group.stundenRappen + group.auslagenRappen;
           const istAbgelaufenOffen = group.status === "offen" && group.bis < heuteIso();
 
           return (
