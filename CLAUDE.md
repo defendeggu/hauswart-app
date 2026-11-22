@@ -60,6 +60,11 @@ supabase` verfügbar) und Docker Desktop lokal installiert und gestartet.
   Build-Variable `VITE_BASE_PATH` (siehe `.env.example`), weil die App
   später auf eine eigene Domain zieht.
 - Mobil zuerst für den Hauswart-Bereich: Touch-Flächen mindestens 48px.
+- Version nach SemVer in `package.json` (wird in der Fusszeile angezeigt);
+  neue Funktionen = Minor. Lock-Datei danach **nicht** mit `npm install
+  --package-lock-only` nachziehen: unter Windows fallen dabei gebündelte
+  Linux-Pakete von Tailwind heraus und `npm ci` in CI scheitert. Stattdessen
+  die beiden `version`-Felder in `package-lock.json` direkt anpassen.
 
 ## Struktur
 
