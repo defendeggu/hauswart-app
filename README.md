@@ -19,7 +19,8 @@ Aktuelle Version siehe `package.json` bzw. Fusszeile der App (SemVer).
 - **M2** Hauswart-App: Stunden/Auslagen erfassen, eigene Einträge – erledigt
 - **M3** Admin-Bereich: Übersicht, Einträge, Familien, Tätigkeiten, Logins – erledigt
 - **M4** 2FA (Pflicht für Admins), Perioden abschliessen/wieder öffnen, Stundensatz, Audit-Log – erledigt
-- M5–M7: siehe [docs/PLAN.md](docs/PLAN.md) Abschnitt 9
+- **M5** Export CSV/Excel, PDF-Abrechnung pro Familie, Sammel-PDF, Jahresbericht für die GV – erledigt
+- M6–M7: siehe [docs/PLAN.md](docs/PLAN.md) Abschnitt 9
 
 ## Funktionen
 
@@ -31,7 +32,8 @@ Aktuelle Version siehe `package.json` bzw. Fusszeile der App (SemVer).
   filtern/korrigieren/nachtragen (mit Kommentar), Familien und Tätigkeiten
   pflegen, Logins mit Initial-Passwort anlegen, Passwort und 2FA
   zurücksetzen, Logins sperren, Perioden abschliessen/wieder öffnen,
-  Stundensatz ändern, Audit-Log. 2FA ist Pflicht.
+  Stundensatz ändern, Audit-Log, Export (CSV/Excel), PDF-Abrechnungen und
+  Jahresbericht für die GV. 2FA ist Pflicht.
 - Echte Namen stehen nur in der Datenbank, nie im Repo.
 
 ## Lokal entwickeln

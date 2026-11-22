@@ -213,3 +213,14 @@ export async function fetchAuditLog(filter: AuditFilter = {}, limit = 200): Prom
   if (error) throw error;
   return data as AuditRow[];
 }
+
+export async function fetchSiedlung(): Promise<string> {
+  const { data, error } = await supabase.from("einstellungen").select("siedlung").maybeSingle();
+  if (error) throw error;
+  return (data as { siedlung: string } | null)?.siedlung ?? "";
+}
+
+export async function saveSiedlung(siedlung: string) {
+  const { error } = await supabase.from("einstellungen").update({ siedlung }).eq("id", true);
+  if (error) throw error;
+}

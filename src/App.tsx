@@ -12,6 +12,7 @@ import { AdminActivitiesPage } from "./pages/admin/AdminActivitiesPage";
 import { AdminLoginsPage } from "./pages/admin/AdminLoginsPage";
 import { AdminPeriodsPage } from "./pages/admin/AdminPeriodsPage";
 import { AdminAuditPage } from "./pages/admin/AdminAuditPage";
+import { AdminReportsPage } from "./pages/admin/AdminReportsPage";
 import { HauswartLayout } from "./layouts/HauswartLayout";
 import { AdminLayout } from "./layouts/AdminLayout";
 import { Footer } from "./components/Footer";
@@ -43,6 +44,7 @@ export default function App() {
               <Route path="taetigkeiten" element={<AdminActivitiesPage />} />
               <Route path="logins" element={<AdminLoginsPage />} />
               <Route path="perioden" element={<AdminPeriodsPage />} />
+              <Route path="abrechnung" element={<AdminReportsPage />} />
               <Route path="audit" element={<AdminAuditPage />} />
             </Route>
 

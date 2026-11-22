@@ -4,9 +4,17 @@ import { deleteEntry } from "../../lib/entries";
 import { friendlyErrorMessage } from "../../lib/errors";
 import { formatChf, formatDate, formatHours } from "../../lib/format";
 import { useLoad } from "../../lib/useLoad";
+import { downloadCsv, downloadXlsx, entriesToExportRows } from "../../lib/export";
 import { EditEntryDialog } from "../../components/EditEntryDialog";
 import { AdminNewEntryDialog } from "../../components/AdminNewEntryDialog";
-import { ErrorText, Field, inputClass, linkButtonClass, primaryButtonClass } from "../../components/ui";
+import {
+  ErrorText,
+  Field,
+  inputClass,
+  linkButtonClass,
+  primaryButtonClass,
+  secondaryButtonClass,
+} from "../../components/ui";
 
 type SortKey = "datum" | "familie" | "taetigkeit" | "wert";
 
@@ -65,6 +73,8 @@ export function AdminEntriesPage() {
     return list;
   }, [entries.data, sortKey, sortAsc, familyName]);
 
+  const exportName = `Eintraege${von ? `_ab_${von}` : ""}${bis ? `_bis_${bis}` : ""}`;
+
   function toggleSort(key: SortKey) {
     if (key === sortKey) setSortAsc(!sortAsc);
     else {
@@ -97,14 +107,36 @@ export function AdminEntriesPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold text-slate-900">Einträge</h1>
-        <button
-          type="button"
-          onClick={() => setCreating(true)}
-          disabled={!stammdaten.data}
-          className={primaryButtonClass}
-        >
-          Nachtragen
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => downloadCsv(entriesToExportRows(sorted, familyName), `${exportName}.csv`)}
+            disabled={sorted.length === 0}
+            className={secondaryButtonClass}
+          >
+            CSV
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              downloadXlsx(entriesToExportRows(sorted, familyName), `${exportName}.xlsx`).catch((err) =>
+                setActionError(friendlyErrorMessage(err as { message?: string })),
+              )
+            }
+            disabled={sorted.length === 0}
+            className={secondaryButtonClass}
+          >
+            Excel
+          </button>
+          <button
+            type="button"
+            onClick={() => setCreating(true)}
+            disabled={!stammdaten.data}
+            className={primaryButtonClass}
+          >
+            Nachtragen
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

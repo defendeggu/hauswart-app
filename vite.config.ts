@@ -57,6 +57,15 @@ export default defineConfig(({ command, mode }) => {
         },
         workbox: {
           globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+          // PDF- und Excel-Bibliotheken braucht nur der Admin-Bereich (online);
+          // nicht auf jedes Handy vorausladen.
+          globIgnores: [
+            "**/jspdf*.js",
+            "**/html2canvas*.js",
+            "**/purify*.js",
+            "**/index.es-*.js",
+            "**/browser-*.js",
+          ],
         },
       }),
     ],

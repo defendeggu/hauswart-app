@@ -6,6 +6,7 @@ const TABS = [
   { to: "/admin", label: "Übersicht", end: true },
   { to: "/admin/eintraege", label: "Einträge" },
   { to: "/admin/perioden", label: "Perioden" },
+  { to: "/admin/abrechnung", label: "Abrechnung" },
   { to: "/admin/familien", label: "Familien" },
   { to: "/admin/taetigkeiten", label: "Tätigkeiten" },
   { to: "/admin/logins", label: "Logins" },
