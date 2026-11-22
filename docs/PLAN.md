@@ -149,6 +149,8 @@ Total.
 ### Hauswart-App (mobil zuerst)
 - Login (Benutzername + Passwort, optional TOTP). Kein Self-Service
   «Passwort vergessen» – bei Bedarf wendet sich die Familie an den Admin.
+  Eingeloggt kann jeder sein Passwort selbst ändern (z.B. das
+  Initial-Passwort ersetzen).
 - **Erfassen:** Datum (Standard: heute), Tätigkeit als grosse Kacheln, dann
   je nach Einheit Dauer (Schnellwahl 0.5 / 1 / 1.5 / 2 / 3 h und +/–) oder
   Betrag in Franken, Bemerkung
