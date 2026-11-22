@@ -17,10 +17,30 @@ const RATE_LIMIT_MAX_ATTEMPTS = 10;
 
 const GENERIC_RESPONSE = { error: "Benutzername oder Passwort ist falsch." };
 
-function jsonResponse(body: unknown, status: number) {
+// Der Browser ruft diese Function von einer anderen Origin auf (GitHub
+// Pages), darum braucht es CORS inkl. Antwort auf den OPTIONS-Preflight.
+// Bei einem Domain-Wechsel hier ergänzen (docs/PLAN.md Abschnitt 10).
+const ALLOWED_ORIGINS = [
+  "https://defendeggu.github.io",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
+function corsHeadersFor(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") ?? "";
+  if (!ALLOWED_ORIGINS.includes(origin)) return {};
+  return {
+    "access-control-allow-origin": origin,
+    "access-control-allow-methods": "POST, OPTIONS",
+    "access-control-allow-headers": "authorization, apikey, content-type, x-client-info",
+    vary: "origin",
+  };
+}
+
+function jsonResponse(body: unknown, status: number, cors: Record<string, string>) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...cors },
   });
 }
 
@@ -31,8 +51,15 @@ function escapeLikePattern(value: string): string {
 }
 
 Deno.serve(async (req) => {
+  const cors = corsHeadersFor(req);
+  const respond = (payload: unknown, status: number) => jsonResponse(payload, status, cors);
+
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: cors });
+  }
+
   if (req.method !== "POST") {
-    return jsonResponse({ error: "Method not allowed" }, 405);
+    return respond({ error: "Method not allowed" }, 405);
   }
 
   let username: unknown;
@@ -40,11 +67,11 @@ Deno.serve(async (req) => {
     const body = await req.json();
     username = body?.username;
   } catch {
-    return jsonResponse({ error: "Ungültiger Request-Body" }, 400);
+    return respond({ error: "Ungültiger Request-Body" }, 400);
   }
 
   if (typeof username !== "string" || username.trim() === "" || username.length > 64) {
-    return jsonResponse(GENERIC_RESPONSE, 400);
+    return respond(GENERIC_RESPONSE, 400);
   }
   const normalizedUsername = username.trim().toLowerCase();
   const likePattern = escapeLikePattern(normalizedUsername);
@@ -65,7 +92,7 @@ Deno.serve(async (req) => {
     .gte("versucht_am", windowStart);
 
   if ((count ?? 0) >= RATE_LIMIT_MAX_ATTEMPTS) {
-    return jsonResponse(
+    return respond(
       { error: "Zu viele Versuche. Bitte in ein paar Minuten erneut versuchen." },
       429,
     );
@@ -81,14 +108,14 @@ Deno.serve(async (req) => {
     .maybeSingle();
 
   if (!profile) {
-    return jsonResponse(GENERIC_RESPONSE, 404);
+    return respond(GENERIC_RESPONSE, 404);
   }
 
   const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(profile.id);
   const email = authUser?.user?.email;
   if (!email) {
-    return jsonResponse(GENERIC_RESPONSE, 404);
+    return respond(GENERIC_RESPONSE, 404);
   }
 
-  return jsonResponse({ email }, 200);
+  return respond({ email }, 200);
 });
