@@ -16,6 +16,7 @@ npm run build        # Typecheck + Produktionsbuild nach dist/
 npm run typecheck    # Nur Typecheck
 npm test             # Vitest einmalig
 npm run test:watch   # Vitest im Watch-Modus
+npm run test:e2e     # Playwright (braucht laufende lokale Supabase-Instanz)
 
 npm run db:start     # Lokale Supabase-Instanz starten (braucht Docker)
 npm run db:reset     # Migrationen + supabase/seed.sql neu einspielen

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatChf, formatDate, parseDecimal } from "./format";
+import { formatChf, formatDate, formatHours, parseDecimal } from "./format";
 
 describe("formatChf", () => {
   it("formatiert Rappen als CHF mit Hochkomma-Tausendertrenner", () => {
@@ -16,6 +16,14 @@ describe("formatChf", () => {
 describe("formatDate", () => {
   it("formatiert ISO-Datum als TT.MM.JJJJ", () => {
     expect(formatDate("2026-11-22")).toBe("22.11.2026");
+  });
+});
+
+describe("formatHours", () => {
+  it("lässt überflüssige Nullen weg", () => {
+    expect(formatHours(2)).toBe("2 h");
+    expect(formatHours(1.5)).toBe("1.5 h");
+    expect(formatHours(1.25)).toBe("1.25 h");
   });
 });
 

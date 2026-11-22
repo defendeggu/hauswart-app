@@ -19,6 +19,12 @@ export function formatDate(isoDate: string): string {
   return `${tag}.${monat}.${jahr}`;
 }
 
+/** "1.50" -> "1.5 h", "2.00" -> "2 h" */
+export function formatHours(value: number): string {
+  const trimmed = value.toFixed(2).replace(/0+$/, "").replace(/\.$/, "");
+  return `${trimmed} h`;
+}
+
 /** Akzeptiert Komma oder Punkt als Dezimaltrennzeichen, z.B. "1,5" oder "1.5". */
 export function parseDecimal(input: string): number | null {
   const normalized = input.trim().replace(",", ".");
