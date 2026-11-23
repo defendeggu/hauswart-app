@@ -60,6 +60,14 @@ supabase` verfügbar) und Docker Desktop lokal installiert und gestartet.
   Build-Variable `VITE_BASE_PATH` (siehe `.env.example`), weil die App
   später auf eine eigene Domain zieht.
 - Mobil zuerst für den Hauswart-Bereich: Touch-Flächen mindestens 48px.
+- Dunkelmodus: `src/index.css` definiert unter `:root.dark` die Farbskalen
+  `white`, `slate`, `teal`, `amber`, `red` um (Klasse `.dark` auf `<html>`,
+  gesetzt von `public/theme-init.js` und `src/lib/theme.ts`). Komponenten
+  verwenden deshalb nur diese Skalen; andere Farben (z.B. `gray`, `blue`)
+  zuerst dort ergänzen. Halbtransparente Overlays mit `bg-black/…`.
+- Die Content-Security-Policy steht in `vite.config.ts` und wird nur im Build
+  als `<meta>`-Tag eingefügt (der Dev-Server braucht Inline-Styles). Keine
+  Inline-Skripte – die CSP verbietet sie.
 - Version nach SemVer in `package.json` (wird in der Fusszeile angezeigt);
   neue Funktionen = Minor. Lock-Datei danach **nicht** mit `npm install
   --package-lock-only` nachziehen: unter Windows fallen dabei gebündelte

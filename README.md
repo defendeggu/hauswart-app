@@ -34,6 +34,7 @@ Aktuelle Version siehe `package.json` bzw. Fusszeile der App (SemVer).
   zurücksetzen, Logins sperren, Perioden abschliessen/wieder öffnen,
   Stundensatz ändern, Audit-Log, Export (CSV/Excel), PDF-Abrechnungen und
   Jahresbericht für die GV. 2FA ist Pflicht.
+- Darstellung hell, dunkel oder wie das Gerät (Umschalter in der Fusszeile).
 - Echte Namen stehen nur in der Datenbank, nie im Repo.
 
 ## Lokal entwickeln

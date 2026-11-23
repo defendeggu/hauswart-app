@@ -1,11 +1,39 @@
 import { readFileSync } from "node:fs";
-import { loadEnv } from "vite";
+import { loadEnv, type Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 
 const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), "utf-8"));
+
+// GitHub Pages liefert keine eigenen HTTP-Header aus, darum steht die
+// Content-Security-Policy als meta-Tag im ausgelieferten HTML. Keine
+// Fremd-Skripte, keine Analytics; connect-src erlaubt nur Supabase.
+// Nur im Build: der Dev-Server spielt CSS als Inline-Style ein, das die
+// strenge style-src sonst blockieren würde.
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+  "base-uri 'self'",
+  "form-action 'self'",
+].join("; ");
+
+const cspPlugin: Plugin = {
+  name: "hauswart-csp",
+  apply: "build",
+  transformIndexHtml: () => [
+    {
+      tag: "meta",
+      attrs: { "http-equiv": "Content-Security-Policy", content: CONTENT_SECURITY_POLICY },
+      injectTo: "head-prepend",
+    },
+  ],
+};
 
 // Der Basis-Pfad ist eine Build-Variable, weil die App später von
 // https://defendeggu.github.io/hauswart-app/ auf eine eigene Domain
@@ -20,6 +48,7 @@ export default defineConfig(({ command, mode }) => {
       __APP_VERSION__: JSON.stringify(pkg.version),
     },
     plugins: [
+      cspPlugin,
       react(),
       tailwindcss(),
       VitePWA({

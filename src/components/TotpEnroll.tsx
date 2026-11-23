@@ -84,7 +84,7 @@ export function TotpEnroll({ onDone }: { onDone: () => void }) {
       <img
         src={enrollment.qrCode}
         alt="QR-Code für die Authenticator-App"
-        className="h-48 w-48 rounded-lg border border-slate-200 bg-white p-2"
+        className="h-48 w-48 rounded-lg border border-slate-200 bg-[#ffffff] p-2"
       />
       <p className="break-all text-xs text-slate-500">
         Schlüssel: <span className="font-mono text-slate-700">{enrollment.secret}</span>

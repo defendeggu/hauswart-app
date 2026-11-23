@@ -1,7 +1,48 @@
 @import "tailwindcss";
 
+/* dark:-Varianten folgen der Klasse .dark auf <html> (gesetzt von
+   public/theme-init.js bzw. src/lib/theme.ts), nicht direkt dem System. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   color-scheme: light;
+  --app-bg: #f8fafc;
+}
+
+/*
+ * Dunkelmodus: statt jede Komponente mit dark:-Klassen zu versehen, werden
+ * die verwendeten Farbskalen umgedreht. Helle Flächen (white, slate-50) werden
+ * dunkel, dunkle Schrift (slate-900) wird hell; Akzentfarben werden heller,
+ * damit sie auf dunklem Grund lesbar bleiben. Neue Komponenten sollten
+ * deshalb nur diese Skalen verwenden (white, slate, teal, amber, red).
+ */
+:root.dark {
+  color-scheme: dark;
+  --app-bg: #020617;
+
+  --color-white: #0f172a;
+  --color-slate-50: #1e293b;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #334155;
+  --color-slate-300: #475569;
+  --color-slate-400: #64748b;
+  --color-slate-500: #94a3b8;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-900: #f8fafc;
+
+  --color-teal-50: #042f2e;
+  --color-teal-600: #2dd4bf;
+  --color-teal-700: #14b8a6;
+  --color-teal-800: #2dd4bf;
+  --color-teal-900: #5eead4;
+
+  --color-amber-50: #451a03;
+  --color-amber-700: #fbbf24;
+  --color-amber-800: #fcd34d;
+
+  --color-red-600: #f87171;
 }
 
 html,
@@ -11,5 +52,6 @@ body,
 }
 
 body {
-  background-color: #f8fafc;
+  background-color: var(--app-bg);
+  color: var(--color-slate-900);
 }
